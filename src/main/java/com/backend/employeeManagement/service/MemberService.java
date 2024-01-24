@@ -3,9 +3,11 @@ package com.backend.employeeManagement.service;
 import com.backend.employeeManagement.exceptions.EmailAlreadyExistsException;
 import com.backend.employeeManagement.exceptions.MemberNotFoundException;
 import com.backend.employeeManagement.exceptions.PhoneNumberAlreadyExistsException;
+import com.backend.employeeManagement.models.LeaveAndSalary;
 import com.backend.employeeManagement.models.Member;
 import com.backend.employeeManagement.models.MemberUpdateRequest;
 import com.backend.employeeManagement.models.Team;
+import com.backend.employeeManagement.repository.LeaveAndSalaryRepository;
 import com.backend.employeeManagement.repository.MemberRepository;
 import com.backend.employeeManagement.repository.TeamRepository;
 import jakarta.transaction.Transactional;
@@ -23,6 +25,9 @@ public class MemberService {
 
     @Autowired
     private TeamRepository teamRepository;
+
+    @Autowired
+    LeaveAndSalaryRepository leaveAndSalaryRepository;
 
 
     public MemberService(MemberRepository memberRepository) {
@@ -55,9 +60,18 @@ public class MemberService {
 
           member.setManager_id(team.getManager_id());
           member.setTeam_id(team.getTeam_id());
-//        member.setCheckField(isManager);
 
-        memberRepository.save(member);
+          memberRepository.save(member);
+            long  id = member.getMember_Id();
+        LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
+                .leaves(10)
+                .salary(50000)
+                .memberId(id)
+                .build();
+
+        leaveAndSalaryRepository.save(leaveAndSalary);
+
+
     }
     //update
     public Member updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
