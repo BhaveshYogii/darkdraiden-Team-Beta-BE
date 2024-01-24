@@ -87,18 +87,15 @@ public class MemberController {
 
 
     //update
-    @PutMapping("/update")
-    public ResponseEntity<String> updateMemberDetails(@RequestBody MemberUpdateRequest updateRequest) {
+    @PutMapping("/update/{id}")
+    public ResponseEntity<Member> updateMemberDetails(@RequestBody MemberUpdateRequest updateRequest,@PathVariable long id ) {
         try {
-            // Assume you have the member's ID available after login
-            long memberId = 123; // Replace with actual member ID
-
             // Call MemberService to update member details
-            memberService.updateMemberDetails(memberId, updateRequest);
+            Member member = memberService.updateMemberDetails(id,updateRequest);
 
-            return ResponseEntity.ok("Member details updated successfully");
+            return ResponseEntity.ok(member);
         } catch (MemberNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Member not found");
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
 

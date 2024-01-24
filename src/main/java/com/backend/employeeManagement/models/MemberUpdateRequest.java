@@ -15,4 +15,5 @@ public class MemberUpdateRequest {
     private String address;
     private String phoneNumber;
     private String profile;
+    private String email;
 }

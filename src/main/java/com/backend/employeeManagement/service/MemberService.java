@@ -60,18 +60,18 @@ public class MemberService {
         memberRepository.save(member);
     }
     //update
-    public void updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
+    public Member updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException("Member not found"));
-
 
         member.setMemberName(updateRequest.getMemberName());
         member.setAddress(updateRequest.getAddress());
         member.setPhoneNumber(updateRequest.getPhoneNumber());
         member.setProfile(updateRequest.getProfile());
-
-
+        member.setEmail(updateRequest.getEmail());
         memberRepository.save(member);
+
+        return member;
     }
 
     public boolean validateLogin(String email, String password) {
