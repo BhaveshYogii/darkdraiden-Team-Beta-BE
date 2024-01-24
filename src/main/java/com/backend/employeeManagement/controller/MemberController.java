@@ -44,11 +44,10 @@ public class MemberController {
     }
 
     @PostMapping("/add-member")
-    public ResponseEntity<String> createMember(@RequestBody Member member,
-                                       @RequestParam(name = "isManager", defaultValue = "false") boolean isManager) {
+    public ResponseEntity<String> createMember(@RequestBody Member member) {
 
         try{
-            memberService.saveMember(member,isManager);
+            memberService.saveMember(member);
             return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful");
         }
         catch(EmailAlreadyExistsException e){
@@ -69,25 +68,20 @@ public class MemberController {
 
     //login
     @PostMapping("/login")
-    public ResponseEntity<String> login(@RequestBody MemberLoginRequest loginRequest) {
+    public ResponseEntity<Member> login(@RequestBody MemberLoginRequest loginRequest) {
 
         String email = loginRequest.getEmail();
         String password = loginRequest.getPassword();
 
-
         boolean loginSuccessful = memberService.validateLogin(email, password);
+
 
         if (loginSuccessful) {
             Member member = memberService.find(email);
-            if(member.isCheckField())
-            {
-                return ResponseEntity.ok("Manager's Login successful");
+                 return ResponseEntity.ok(member);
             }
-            else {
-                return ResponseEntity.ok("Login successful");
-            }
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid email or password");
+        else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
         }
     }
 
@@ -108,7 +102,10 @@ public class MemberController {
         }
     }
 
-
-
+    @GetMapping("/resetAutoIncrement")
+    public ResponseEntity<String> resetAutoIncrement() {
+        memberService.resetAutoIncrement();
+        return ResponseEntity.ok("Auto-increment sequence reset successfully.");
+    }
 
 }

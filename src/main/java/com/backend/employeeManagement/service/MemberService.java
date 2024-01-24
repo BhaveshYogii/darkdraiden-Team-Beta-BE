@@ -5,18 +5,25 @@ import com.backend.employeeManagement.exceptions.MemberNotFoundException;
 import com.backend.employeeManagement.exceptions.PhoneNumberAlreadyExistsException;
 import com.backend.employeeManagement.models.Member;
 import com.backend.employeeManagement.models.MemberUpdateRequest;
+import com.backend.employeeManagement.models.Team;
 import com.backend.employeeManagement.repository.MemberRepository;
+import com.backend.employeeManagement.repository.TeamRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
-
+@Transactional
 @Service
 public class MemberService {
     @Autowired
     private final MemberRepository memberRepository;
+
+    @Autowired
+    private TeamRepository teamRepository;
+
 
     public MemberService(MemberRepository memberRepository) {
         this.memberRepository = memberRepository;
@@ -34,7 +41,7 @@ public class MemberService {
         memberRepository.deleteById(id);
     }
 
-    public void saveMember(Member member, boolean isManager) {
+    public void saveMember(Member member) {
 
         if(memberRepository.findByEmail(member.getEmail())!=null)
         {
@@ -43,7 +50,13 @@ public class MemberService {
         if (memberRepository.findByPhoneNumber(member.getPhoneNumber()) != null) {
             throw new PhoneNumberAlreadyExistsException("Phone number is already registered");
         }
-        member.setCheckField(isManager);
+
+        Team team = teamRepository.findByProfile(member.getProfile()) ;
+
+          member.setManager_id(team.getManager_id());
+          member.setTeam_id(team.getTeam_id());
+//        member.setCheckField(isManager);
+
         memberRepository.save(member);
     }
     //update
@@ -70,6 +83,10 @@ public class MemberService {
 
     public Member find(String email){
         return memberRepository.findByEmail(email);
+    }
+
+    public void resetAutoIncrement() {
+        memberRepository.resetAutoIncrement();
     }
 
 }
