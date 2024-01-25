@@ -103,4 +103,9 @@ public class MemberService {
         memberRepository.resetAutoIncrement();
     }
 
+    public String getManagerName(String profile){
+        Team team = teamRepository.findByProfile(profile);
+        return team.getTeam_manager();
+    }
+
 }

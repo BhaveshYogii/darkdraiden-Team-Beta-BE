@@ -32,7 +32,7 @@ public class LeaveAndSalaryService {
         LeaveAndSalary leaveAndSalary = leaveAndSalaryRepository.findByMemberId(memberId);
         long leaves = leaveAndSalary.getLeaves();
         if(leaves!=0){
-            leaveAndSalary.setSalary(leaves-1);
+            leaveAndSalary.setLeaves(leaves-1);
         }
         else {
             throw new LeavesLimitExceededException("Leaves limit exceeded");

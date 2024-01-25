@@ -105,4 +105,10 @@ public class MemberController {
         return ResponseEntity.ok("Auto-increment sequence reset successfully.");
     }
 
+    @GetMapping("/manager-name/{profile}")
+    public ResponseEntity<String> getManagerName(@PathVariable String profile){
+        String manager_name = memberService.getManagerName(profile);
+        return ResponseEntity.ok(manager_name);
+    }
+
 }
