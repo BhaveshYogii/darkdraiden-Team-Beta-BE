@@ -33,6 +33,7 @@ public class LeaveAndSalaryService {
         long leaves = leaveAndSalary.getLeaves();
         if(leaves!=0){
             leaveAndSalary.setLeaves(leaves-1);
+            leaveAndSalaryRepository.save(leaveAndSalary);
         }
         else {
             throw new LeavesLimitExceededException("Leaves limit exceeded");

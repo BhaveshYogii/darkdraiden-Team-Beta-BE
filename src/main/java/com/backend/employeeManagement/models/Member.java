@@ -33,9 +33,6 @@ public class Member {
 
     private String password;
 
-    @Column(columnDefinition = "bit default 0")
-    private boolean checkField;
-
     private long manager_id;
 
     private int team_id;

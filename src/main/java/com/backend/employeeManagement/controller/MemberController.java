@@ -15,7 +15,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@CrossOrigin("http://localhost:3000")
+@CrossOrigin(origins = {"http://localhost:3000","http://localhost:3001","http://localhost:3002"})
 @RestController
 @RequestMapping("/member")
 public class MemberController {
@@ -110,5 +110,21 @@ public class MemberController {
         String manager_name = memberService.getManagerName(profile);
         return ResponseEntity.ok(manager_name);
     }
+
+    @PostMapping("/add-manager")
+    public ResponseEntity<String> addManager(@RequestBody Member member) {
+
+        try {
+
+            Member member1 = memberService.addManager(member);
+
+            return ResponseEntity.status(HttpStatus.CREATED).body("Registration successful");
+        } catch (EmailAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Email is already registered");
+        } catch (PhoneNumberAlreadyExistsException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body("Phone number is already registered");
+        }
+    }
+
 
 }

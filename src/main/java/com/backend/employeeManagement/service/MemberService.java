@@ -108,4 +108,39 @@ public class MemberService {
         return team.getTeam_manager();
     }
 
+    public Member addManager(Member member) {
+
+        if(memberRepository.findByEmail(member.getEmail())!=null)
+        {
+            throw new EmailAlreadyExistsException("Email is already registered");
+        }
+        if (memberRepository.findByPhoneNumber(member.getPhoneNumber()) != null) {
+            throw new PhoneNumberAlreadyExistsException("Phone number is already registered");
+        }
+
+
+        Member member1 = memberRepository.save(member);
+        member1.setManager_id(member.getMember_Id());
+        memberRepository.save(member1);
+        long  id = member.getMember_Id();
+        LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
+                .leaves(10)
+                .salary(50000)
+                .memberId(id)
+                .build();
+
+        leaveAndSalaryRepository.save(leaveAndSalary);
+        Team team =  Team.builder().team_manager(member1.getMemberName())
+                .profile(member1.getProfile())
+                .manager_id((int) member1.getManager_id()).team_name("team" + member1.getMember_Id()).build();
+
+        teamRepository.save(team);
+        member1.setTeam_id(team.getTeam_id());
+        memberRepository.save(member1);
+
+
+        return member1;
+    }
+
+
 }
