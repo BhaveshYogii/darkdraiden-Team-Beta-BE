@@ -60,10 +60,10 @@ public class MemberService {
             throw new PhoneNumberAlreadyExistsException("Phone number is already registered");
         }
 
-        Team team = teamRepository.findByProfile(member.getProfile()) ;
+//        Team team = teamRepository.findByProfile(member.getProfile()) ;
 
-          member.setManager_id(team.getManager_id());
-          member.setTeam_id(team.getTeam_id());
+          member.setManager_id(0);
+          member.setTeam_id(0);
           member.setPassword(bCryptPasswordEncoder.encode(member.getPassword()));
 
           memberRepository.save(member);
@@ -80,17 +80,20 @@ public class MemberService {
     }
     //update
     public Member updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found"));
 
-        member.setMemberName(updateRequest.getMemberName());
-        member.setAddress(updateRequest.getAddress());
-        member.setPhoneNumber(updateRequest.getPhoneNumber());
-        member.setProfile(updateRequest.getProfile());
-        member.setEmail(updateRequest.getEmail());
-        memberRepository.save(member);
+        Member member=memberRepository.findByPhoneNumber(updateRequest.getPhoneNumber());
+        if(member!=null) {
+            member.setPhoneNumber(updateRequest.getPhoneNumber());
+            member.setProfile(updateRequest.getProfile());
+            member.setAddress(updateRequest.getAddress());
+            memberRepository.save(member);
+            return member;
+        }
+        else{
+            throw new PhoneNumberAlreadyExistsException("Phone number already present");
+        }
+//        member.setEmail(updateRequest.getEmail());
 
-        return member;
     }
 
     public boolean validateLogin(String email, String password) {

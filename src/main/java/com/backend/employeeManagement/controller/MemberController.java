@@ -1,16 +1,19 @@
 package com.backend.employeeManagement.controller;
 
 import com.backend.employeeManagement.exceptions.EmailAlreadyExistsException;
-import com.backend.employeeManagement.exceptions.MemberNotFoundException;
 import com.backend.employeeManagement.exceptions.PhoneNumberAlreadyExistsException;
 import com.backend.employeeManagement.models.Member;
 import com.backend.employeeManagement.models.MemberLoginRequest;
 import com.backend.employeeManagement.models.MemberUpdateRequest;
+import com.backend.employeeManagement.service.JwtService;
 import com.backend.employeeManagement.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 //import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +24,14 @@ import java.util.List;
 public class MemberController {
     @Autowired
     private final MemberService memberService;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    JwtService jwtService;
+
+
     public MemberController(MemberService memberService) {
         this.memberService = memberService;
     }
@@ -68,20 +79,14 @@ public class MemberController {
 
     //login
     @PostMapping("/login")
-    public ResponseEntity<Member> login(@RequestBody MemberLoginRequest loginRequest) {
+    public String login(@RequestBody MemberLoginRequest loginRequest) {
 
-        String email = loginRequest.getEmail();
-        String password = loginRequest.getPassword();
-
-        boolean loginSuccessful = memberService.validateLogin(email, password);
-
-
-        if (loginSuccessful) {
-            Member member = memberService.find(email);
-                 return ResponseEntity.ok(member);
-            }
-        else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
+        if(authentication.isAuthenticated()){
+            return  jwtService.GenerateToken(loginRequest.getEmail());
+        }
+        else{
+            return "Invalid Credentials";
         }
     }
 
@@ -94,10 +99,11 @@ public class MemberController {
             Member member = memberService.updateMemberDetails(id,updateRequest);
 
             return ResponseEntity.ok(member);
-        } catch (MemberNotFoundException e) {
+        } catch (PhoneNumberAlreadyExistsException e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
         }
     }
+
 
     @GetMapping("/resetAutoIncrement")
     public ResponseEntity<String> resetAutoIncrement() {
