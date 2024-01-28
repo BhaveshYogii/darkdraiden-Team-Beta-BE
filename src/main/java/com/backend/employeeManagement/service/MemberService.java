@@ -13,6 +13,7 @@ import com.backend.employeeManagement.repository.TeamRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,9 @@ import java.util.Optional;
 public class MemberService {
     @Autowired
     private final MemberRepository memberRepository;
+
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -60,6 +64,7 @@ public class MemberService {
 
           member.setManager_id(team.getManager_id());
           member.setTeam_id(team.getTeam_id());
+          member.setPassword(bCryptPasswordEncoder.encode(member.getPassword()));
 
           memberRepository.save(member);
             long  id = member.getMember_Id();
@@ -91,8 +96,11 @@ public class MemberService {
     public boolean validateLogin(String email, String password) {
         Member member = memberRepository.findByEmail(email);
 
-
-        return member != null && member.getPassword().equals(password);
+//        String encrypted_password = bCryptPasswordEncoder.encode(password);
+        if(member!=null){
+            return bCryptPasswordEncoder.matches(password,member.getPassword());
+        }
+        return false;
     }
 
     public Member find(String email){
@@ -121,6 +129,7 @@ public class MemberService {
 
         Member member1 = memberRepository.save(member);
         member1.setManager_id(member.getMember_Id());
+        member1.setPassword(bCryptPasswordEncoder.encode(member1.getPassword()));
         memberRepository.save(member1);
         long  id = member.getMember_Id();
         LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
