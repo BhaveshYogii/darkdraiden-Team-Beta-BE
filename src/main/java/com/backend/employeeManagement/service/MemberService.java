@@ -67,7 +67,7 @@ public class MemberService {
           member.setPassword(bCryptPasswordEncoder.encode(member.getPassword()));
 
           memberRepository.save(member);
-            long  id = member.getMember_Id();
+            long  id = member.getMemberId();
         LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
                 .leaves(10)
                 .salary(50000)
@@ -80,18 +80,19 @@ public class MemberService {
     }
     //update
     public Member updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
-
+        Member member1 = memberRepository.findByMemberId(memberId);
         Member member=memberRepository.findByPhoneNumber(updateRequest.getPhoneNumber());
-        if(member!=null) {
-            member.setPhoneNumber(updateRequest.getPhoneNumber());
-            member.setProfile(updateRequest.getProfile());
-            member.setAddress(updateRequest.getAddress());
-            memberRepository.save(member);
-            return member;
+        if(member==null || member.getMemberId()==memberId){
+            member1.setProfile(updateRequest.getProfile());
+            member1.setAddress(updateRequest.getAddress());
+            member1.setPhoneNumber(updateRequest.getPhoneNumber());
+            memberRepository.save(member1);
+            return member1;
         }
         else{
             throw new PhoneNumberAlreadyExistsException("Phone number already present");
         }
+
 //        member.setEmail(updateRequest.getEmail());
 
     }
@@ -131,10 +132,10 @@ public class MemberService {
 
 
         Member member1 = memberRepository.save(member);
-        member1.setManager_id(member.getMember_Id());
+        member1.setManager_id(member.getMemberId());
         member1.setPassword(bCryptPasswordEncoder.encode(member1.getPassword()));
         memberRepository.save(member1);
-        long  id = member.getMember_Id();
+        long  id = member.getMemberId();
         LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
                 .leaves(10)
                 .salary(50000)
@@ -144,7 +145,7 @@ public class MemberService {
         leaveAndSalaryRepository.save(leaveAndSalary);
         Team team =  Team.builder().team_manager(member1.getMemberName())
                 .profile(member1.getProfile())
-                .manager_id((int) member1.getManager_id()).team_name("team" + member1.getMember_Id()).build();
+                .manager_id((int) member1.getManager_id()).team_name("team" + member1.getMemberId()).build();
 
         teamRepository.save(team);
         member1.setTeam_id(team.getTeam_id());
