@@ -13,6 +13,7 @@ import com.backend.employeeManagement.repository.TeamRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -22,6 +23,9 @@ import java.util.Optional;
 public class MemberService {
     @Autowired
     private final MemberRepository memberRepository;
+
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     @Autowired
     private TeamRepository teamRepository;
@@ -56,10 +60,11 @@ public class MemberService {
             throw new PhoneNumberAlreadyExistsException("Phone number is already registered");
         }
 
-        Team team = teamRepository.findByProfile(member.getProfile()) ;
+//        Team team = teamRepository.findByProfile(member.getProfile()) ;
 
-          member.setManager_id(team.getManager_id());
-          member.setTeam_id(team.getTeam_id());
+          member.setManager_id(0);
+          member.setTeam_id(0);
+          member.setPassword(bCryptPasswordEncoder.encode(member.getPassword()));
 
           memberRepository.save(member);
             long  id = member.getMember_Id();
@@ -75,24 +80,30 @@ public class MemberService {
     }
     //update
     public Member updateMemberDetails(long memberId, MemberUpdateRequest updateRequest) {
-        Member member = memberRepository.findById(memberId)
-                .orElseThrow(() -> new MemberNotFoundException("Member not found"));
 
-        member.setMemberName(updateRequest.getMemberName());
-        member.setAddress(updateRequest.getAddress());
-        member.setPhoneNumber(updateRequest.getPhoneNumber());
-        member.setProfile(updateRequest.getProfile());
-        member.setEmail(updateRequest.getEmail());
-        memberRepository.save(member);
+        Member member=memberRepository.findByPhoneNumber(updateRequest.getPhoneNumber());
+        if(member!=null) {
+            member.setPhoneNumber(updateRequest.getPhoneNumber());
+            member.setProfile(updateRequest.getProfile());
+            member.setAddress(updateRequest.getAddress());
+            memberRepository.save(member);
+            return member;
+        }
+        else{
+            throw new PhoneNumberAlreadyExistsException("Phone number already present");
+        }
+//        member.setEmail(updateRequest.getEmail());
 
-        return member;
     }
 
     public boolean validateLogin(String email, String password) {
         Member member = memberRepository.findByEmail(email);
 
-
-        return member != null && member.getPassword().equals(password);
+//        String encrypted_password = bCryptPasswordEncoder.encode(password);
+        if(member!=null){
+            return bCryptPasswordEncoder.matches(password,member.getPassword());
+        }
+        return false;
     }
 
     public Member find(String email){
@@ -121,6 +132,7 @@ public class MemberService {
 
         Member member1 = memberRepository.save(member);
         member1.setManager_id(member.getMember_Id());
+        member1.setPassword(bCryptPasswordEncoder.encode(member1.getPassword()));
         memberRepository.save(member1);
         long  id = member.getMember_Id();
         LeaveAndSalary leaveAndSalary = LeaveAndSalary.builder()
@@ -140,6 +152,10 @@ public class MemberService {
 
 
         return member1;
+    }
+
+    public Member getByEmail(String email){
+        return memberRepository.findByEmail(email);
     }
 
 
