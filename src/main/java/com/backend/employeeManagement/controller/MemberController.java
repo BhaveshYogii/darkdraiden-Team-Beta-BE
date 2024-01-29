@@ -3,6 +3,7 @@ package com.backend.employeeManagement.controller;
 import com.backend.employeeManagement.exceptions.EmailAlreadyExistsException;
 import com.backend.employeeManagement.exceptions.PhoneNumberAlreadyExistsException;
 import com.backend.employeeManagement.models.Member;
+import com.backend.employeeManagement.models.MemberJWTAndObjectDTO;
 import com.backend.employeeManagement.models.MemberLoginRequest;
 import com.backend.employeeManagement.models.MemberUpdateRequest;
 import com.backend.employeeManagement.service.JwtService;
@@ -79,14 +80,19 @@ public class MemberController {
 
     //login
     @PostMapping("/login")
-    public String login(@RequestBody MemberLoginRequest loginRequest) {
-
+    public ResponseEntity<MemberJWTAndObjectDTO> login(@RequestBody MemberLoginRequest loginRequest) {
+        Member member = null;
+        String token = null;
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(loginRequest.getEmail(), loginRequest.getPassword()));
         if(authentication.isAuthenticated()){
-            return  jwtService.GenerateToken(loginRequest.getEmail());
+            member = memberService.getByEmail(loginRequest.getEmail());
+            token = jwtService.GenerateToken(loginRequest.getEmail());
+            MemberJWTAndObjectDTO memberJWTAndObjectDTO = new MemberJWTAndObjectDTO(token,member);
+            return ResponseEntity.ok(memberJWTAndObjectDTO);
         }
         else{
-            return "Invalid Credentials";
+            MemberJWTAndObjectDTO memberJWTAndObjectDTO = new MemberJWTAndObjectDTO(token,member);
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(memberJWTAndObjectDTO);
         }
     }
 

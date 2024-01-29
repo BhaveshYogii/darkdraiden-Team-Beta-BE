@@ -154,5 +154,9 @@ public class MemberService {
         return member1;
     }
 
+    public Member getByEmail(String email){
+        return memberRepository.findByEmail(email);
+    }
+
 
 }
